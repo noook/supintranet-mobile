@@ -1,88 +1,102 @@
 <template>
-    <Page class="page">
-        <ActionBar class="action-bar">
-            <Label class="action-bar-title" text="Home"></Label>
-        </ActionBar>
+  <Page class="page">
+    <ActionBar class="action-bar">
+      <Label class="action-bar-title" text="Home"></Label>
+    </ActionBar>
 
-        <TabView
-            selectedTabTextColor="#42B883"
-            androidTabsPosition="bottom">
-            <TabViewItem
-                class="grades-tab"
-                title="Notes"
-                textTransform="uppercase">
-                <GridLayout rows="auto, *">
-                    <Label row="0" class="header" text="Mes notes" />
-                    <ListView row="1" for="grade in grades">
-                        <v-template>
-                            <GridLayout columns="1*, *" class="grade-item">
-                                <Label
-                                    col="0"
-                                    :text="grade.value" />
-                                <Label
-                                    col="1"
-                                    :text="grade.comment"
-                                    textWrap="true" />
-                            </GridLayout>
-                        </v-template>
-                    </ListView>
-                </GridLayout>
-            </TabViewItem>
-            <TabViewItem
-                title="Paramètres"
-                textTransform="uppercase">
-                <GridLayout rows="auto, *">
-                    <Label row="0" class="header" text="Paramètres" />
-                </GridLayout>
-            </TabViewItem>
-        </TabView>
-    </Page>
+    <TabView selectedTabTextColor="#42B883" androidTabsPosition="bottom">
+      <TabViewItem class="grades-tab" title="Notes" textTransform="uppercase">
+        <StackLayout>
+          <RadListView
+            ref="listView"
+            for="grade in grades"
+            layout="linear"
+            pullToRefresh="true"
+            @itemTap="goToDetail"
+            @pullToRefreshInitiated="refreshGrades">
+            <v-template>
+              <GridLayout columns="*,auto" class="grade-item">
+                <Label col="0" :text="grade | formattedProject" textWrap="true" />
+                <label col="1" :text="grade.value" />
+              </GridLayout>
+            </v-template>
+          </RadListView>
+        </StackLayout>
+      </TabViewItem>
+      <TabViewItem title="Paramètres" textTransform="uppercase">
+        <GridLayout rows="auto, *">
+          <Label row="0" class="header" text="Paramètres"/>
+        </GridLayout>
+      </TabViewItem>
+    </TabView>
+  </Page>
 </template>
 
 <script>
-    import axios from 'axios';
+import axios from "axios";
+import GradeDetail from "./GradeDetail.vue";
+import { ObservableArray } from 'tns-core-modules/data/observable-array';
 
-    export default {
-        created() {
-            axios.post('https://nameless-taiga-44756.herokuapp.com/api/student/grades', {
-                username: "neil.richter",
-                password: "***"
-            })
-                .then(({ data }) => {
-                    this.grades = data.grades;
-                })
-                .catch(err => console.log(err));
+export default {
+  created() {
+    this.getGrades();
+  },
+  data: () => ({
+    grades: ObservableArray([]),
+  }),
+  methods: {
+    goToDetail({ item }) {
+      this.$navigateTo(GradeDetail, {
+        props: {
+          grade: item,
         },
-        data() {
-            return {
-                grades: [],
-            };
-        },
-        computed: {
-            message() {
-                return "Blank {N}-Vue app";
-            }
-        }
-    };
+      });
+    },
+    getGrades() {
+      return axios.post("https://nameless-taiga-44756.herokuapp.com/api/student/grades", {
+          username: "neil.richter",
+          password: "****"
+        })
+        .then(({ data }) => {
+          this.grades = data.grades;
+        })
+        .catch(err => console.log(err));
+    },
+    refreshGrades({ object }) {
+      this.$nextTick(() => {
+        this.getGrades()
+          .then(() => {
+            object.notifyPullToRefreshFinished();
+          })
+          .catch(err => console.log(err));
+      });
+    },
+  },
+  filters: {
+    formattedProject(grade) {
+      return `${grade.ECUE} - ${grade.project}`;
+    }
+  }
+};
 </script>
 
 <style scoped lang="scss">
-    // Start custom common variables
-    @import '../app-variables';
-    // End custom common variables
+// Start custom common variables
+@import "../app-variables";
+// End custom common variables
 
-    // Custom styles
-    .fa {
-        color: $accent-dark;
-    }
+// Custom styles
+.fa {
+  color: $accent-dark;
+}
 
-    .info {
-        font-size: 20;
-    }
+.info {
+  font-size: 20;
+}
 
-    .grades-tab {
-        .grade-item {
-            padding: 20;
-        }
-    }
+.grades-tab {
+  .grade-item {
+    padding: 20;
+  }
+}
 </style>
