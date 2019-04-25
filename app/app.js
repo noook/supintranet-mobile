@@ -1,5 +1,6 @@
 import Vue from "nativescript-vue";
 import RadListView from 'nativescript-ui-listview/vue';
+import store from './store';
 
 Vue.use(RadListView);
 
@@ -13,5 +14,6 @@ new Vue({
 
     components: {
         Home
-    }
+    },
+    store
 }).$start();
