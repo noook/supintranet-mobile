@@ -25,15 +25,8 @@
           </RadListView>
         </StackLayout>
       </TabViewItem>
-      <TabViewItem class="settings-tab" title="Paramètres" textTransform="uppercase">
-        <StackLayout orientation="vertical">
-          <Label class="bold" text="Informations de connexion" textWrap="true" />
-          <TextField hint="ada.lovelace" v-model="input.username" autocorrect="false" />
-          <TextField hint="*****" v-model="input.password" :secure="!showPassword" autocorrect="false" />
-          <Button @tap="checkConnexion" text="Vérifier la connexion" />
-          <Button @tap="logout" text="Me déconnecter" />
-          <Label :text="preview" />
-        </StackLayout>
+      <TabViewItem title="Paramètres" textTransform="uppercase">
+        <Settings />
       </TabViewItem>
     </TabView>
   </Page>
@@ -42,10 +35,14 @@
 <script>
 import axios from "axios";
 import GradeDetail from "./GradeDetail.vue";
+import Settings from './Settings';
 import { mapGetters, mapActions } from 'vuex';
-import { ObservableArray } from 'tns-core-modules/data/observable-array';
+import { LoadingIndicator, Mode } from "nativescript-loading-indicator";
 
 export default {
+  components: {
+    Settings,
+  },
   created() {
     this.getGrades()
       .then(() => {
@@ -70,8 +67,6 @@ export default {
         'Notes',
         'Paramètres',
       ],
-      showPassword: false,
-      preview: '',
     }
   },
   computed: {
@@ -102,41 +97,6 @@ export default {
             object.notifyPullToRefreshFinished();
           })
           .catch(err => console.log(err));
-      });
-    },
-    checkConnexion() {
-      this.checkCredentials(this.input)
-        .then(({ data }) => {
-          this.setUser(data);
-          alert({
-            title: "Succès",
-            message: "Identifiants corrects, rafraîchissez pour obtenir la liste des notes de ce semestre",
-            okButtonText: "OK"
-          }).then(() => {
-            console.log("Alert dialog closed");
-          });
-        })
-        .catch(err => {
-          console.error(err);
-          alert({
-            title: "Echec de la connexion",
-            message: "Identifiants incorrects ou service indisponible. Vérifiez vos informations de connexion ou votre connexion internet et réessayez",
-            okButtonText: "OK"
-          }).then(() => {
-            console.log("Alert dialog closed");
-          });
-        });
-    },
-    logout() {
-      confirm({
-        title: "Déconnexion",
-        message: "Êtes-vous sûr de vouloir vous déconnecter ?",
-        okButtonText: "Ok",
-        cancelButtonText: "Annuler"
-      }).then(result => {
-        if (result === true) {
-          this.unsetUser();
-        }
       });
     },
     tabChanged({ value }) {
@@ -178,21 +138,6 @@ export default {
 
   .grade-item {
     padding: 15;
-  }
-}
-
-.settings-tab {
-  StackLayout {
-    padding: 20;
-
-    > Label.bold {
-      font-weight: 500;
-      font-size: 16;
-    }
-
-    > TextField {
-      font-size: 15;
-    }
   }
 }
 </style>

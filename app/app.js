@@ -2,18 +2,26 @@ import Vue from "nativescript-vue";
 import RadListView from 'nativescript-ui-listview/vue';
 import store from './store';
 
-Vue.use(RadListView);
+import Home from './components/Home';
+import Login from './components/Login.vue';
 
-import Home from "./components/Home";
+Vue.use(RadListView);
 
 new Vue({
     template: `
         <Frame>
-            <Home />
+            <Home v-if="loggedIn" />
+            <Login v-else />
         </Frame>`,
-
+    computed: {
+        loggedIn() {
+            return this.$store.getters.username !== null;
+        },
+    },
     components: {
-        Home
+        Home,
+        Login,
     },
     store
 }).$start();
+

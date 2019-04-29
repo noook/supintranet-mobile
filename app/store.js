@@ -53,7 +53,10 @@ const store = new Vuex.Store({
       return axios.post("https://nameless-taiga-44756.herokuapp.com/api/student/check-credentials", {
         username,
         password,
-      });
+      })
+        .catch(err => {
+          Promise.reject();
+        });
     },
   },
   getters: {
