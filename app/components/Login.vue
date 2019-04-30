@@ -9,7 +9,7 @@
         <TextField hint="********" v-model="password" secure="true" />
         <Button @tap="checkConnexion" text="Connexion" />
       </StackLayout>
-      <StackLayout v-if="loading">
+      <StackLayout class="checking" v-if="loading" orientation="vertical">
         <Label text="Vérification..." horizontalAligment="center" textWrap="true" />
         <ActivityIndicator busy="true" />
       </StackLayout>
@@ -31,9 +31,10 @@ export default {
     };
   },
   methods: {
-    checkConnexion() {
+    async checkConnexion() {
       const { username, password } = this;
-      this.$store.dispatch('checkCredentials', { username, password })
+      this.loading = true;
+      await this.$store.dispatch('checkCredentials', { username, password })
         .then(({ data }) => {
           this.$store.dispatch('setUser', data);
         })
@@ -45,6 +46,7 @@ export default {
             okButtonText: "OK"
           });
         });
+      this.loading = false;
     },
   },
 };
@@ -91,6 +93,14 @@ Page {
         color: #fff;
         font-weight: 600;
         font-size: 18;
+      }
+
+      &.checking {
+        > Label {
+          text-align: center;
+          margin: 0 0 20;
+          font-size: 16;
+        }
       }
     }
   }
